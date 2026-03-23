@@ -1,5 +1,9 @@
-#FILENAME = './challenge9/test'
-FILENAME = './challenge9/input'
+USE_TEST_DATA = True
+
+if USE_TEST_DATA:
+    FILENAME = './challenge9/test'
+else:
+    FILENAME = './challenge9/input'
 
 class Coordinate:
 
@@ -21,7 +25,7 @@ class Coordinate:
         if type(other) != type(self):
             return False
         else: 
-            return self.x == other.id and self.y == other.y
+            return self.x == other.x and self.y == other.y
         
     def __lt__(self, other):
         if type(other) != type(self):
@@ -34,6 +38,9 @@ class Coordinate:
             raise TypeError()
         else:
             return self.x > other.x and self.y > other.y
+        
+    def __hash__(self):
+        return hash(f"{self.x}/{self.y}")
 
 class Rectangle:
 
@@ -50,17 +57,27 @@ class Rectangle:
         side_b = abs(self.coordinateA.y - self.coordinateB.y) +1
         return side_a * side_b
     
-    def GetCoordinates(self):
-        listOfCoordinates = []
-        
-        for x in range(min(self.coordinateA.x, self.coordinateB.x), max(self.coordinateA.x, self.coordinateB.x)):
-            for y in range(min(self.coordinateA.y, self.coordinateB.y), max(self.coordinateA.y, self.coordinateB.y)):
-                listOfCoordinates.append((x,y))
+    def GetCorners(self):
+        corners = set()
 
-        return listOfCoordinates
+        corners.add(self.coordinateA)
+        corners.add(self.coordinateB)
+        corners.add(Coordinate(self.coordinateA.x, self.coordinateB.y))
+        corners.add(Coordinate(self.coordinateB.x, self.coordinateA.y))
+
+        return corners
+
+    def GetCoordinates(self):
+        setOfCoordinates = set()
+        
+        for x in range(min(self.coordinateA.x, self.coordinateB.x), max(self.coordinateA.x, self.coordinateB.x) +1):
+            for y in range(min(self.coordinateA.y, self.coordinateB.y), max(self.coordinateA.y, self.coordinateB.y) +1):
+                setOfCoordinates.add((x,y))
+
+        return setOfCoordinates
     
     def __str__(self):
-        return f"{self.id} (str({self.coordinateA})->str({self.coordinateB})) {self.GetArea()}"
+        return f"#{self.id} {self.coordinateA}->{self.coordinateB} {self.GetArea()}²"
 
 def ReadData(FILENAME):
     coordinates = []
@@ -77,8 +94,9 @@ def ReadData(FILENAME):
             MAX_Y = c.y
     return coordinates, MAX_X, MAX_Y
 
-def ComputeringPerimeters(coordinates):
-    perimeter = []
+def ComputeringPerimeter(coordinates):
+
+    perimeter = set()
 
     # step 1 - mark perimeter
 
@@ -93,7 +111,7 @@ def ComputeringPerimeters(coordinates):
         b = coordinates[0]
 
         # coordinates von a speichern
-        perimeter.append((a.x, a.y))
+        perimeter.add((a.x, a.y))
 
         # a -> b verbinden
 
@@ -102,44 +120,13 @@ def ComputeringPerimeters(coordinates):
 
         for x in range(startX, endX+1):
             for y in range(startY, endY+1):
-                perimeter.append((x, y))
+                perimeter.add((x, y))
         #   coordinates der zwischenschritte speichern
 
         coordinates.append(a)
 
-    # step 2 - fill perimeter
-    # find all "cells" between two "neighbouring" coordinates on a row
 
-    print("Filling Holes ...")
 
-    for row in range(0, MAX_Y+1):
-
-        #get all items from perimeter in this row
-        thisPerimeterRow = []
-        for item in perimeter:
-            if item[1] == row:
-                thisPerimeterRow.append(item)
-
-        if row > 0 and row % 50 == 0:
-            print(f"{(row/MAX_Y)*100}%")
-
-        for cell in range(0, MAX_Y):
-            # look for first perimeter item, save position
-            if (cell, row) in thisPerimeterRow:
-                start = cell
-                # look for next perimeter item, save position
-                end = None
-                for lookout in range(cell, MAX_X+1):
-                    if (lookout, row) in thisPerimeterRow:
-                        end = lookout
-
-                # if end is present, fill from start to end
-                # else do nothing
-                if end is not None:
-                    for i in range(start, end):
-                        if (i, row) not in perimeter:
-                            perimeter.append((i, row))
-            
     return perimeter
 
 def ComputingRectangles(coordinates):
@@ -161,20 +148,30 @@ def ComputingRectangles(coordinates):
             rectangles.append(Rectangle(coordinates[i], coordinates[k]))
     return rectangles
 
-def XIsInBoundsOfY(rect, perimeter):
-        for coord in rect.GetCoordinates():
-            if coord not in perimeter:
-                return False
-        return True
-
 def TestPerimeter(rectangles, perimeter):
     valid_rectangles = []
 
-    # a box is out if perimeter if any part of it lies outside of the perimeter
-    # for each point of a rectangle check if it is in perimeter
-
     for rectangle in rectangles:
-        if XIsInBoundsOfY(rectangle, perimeter):
+        rectangle_coords = rectangle.GetCoordinates()
+        
+        # Check if all rectangle coordinates are inside perimeter using odd-even algorithm
+        all_inside = True
+        for x, y in rectangle_coords:
+            # Cast a ray to the right and count intersections with perimeter points
+            intersection_count = 0
+            for px, py in perimeter:
+                # Check if perimeter point is on the same horizontal line and to the right
+                if py == y and px > x:
+                    intersection_count += 1
+            
+            print(f"{x}/{y} -> {intersection_count}")
+
+            # If odd number of intersections, point is inside
+            if intersection_count % 2 == 0:
+                all_inside = False
+                break
+        
+        if all_inside:
             valid_rectangles.append(rectangle)
 
     return valid_rectangles
@@ -186,10 +183,9 @@ def DrawDebugData():
     global valid_rectangles, coordinates, perimeter
     print()
 
-    for rect in valid_rectangles[0:10]:
-        print(str(rect))
-
-    print()
+    print("Valid Rectangles:")
+    for item in valid_rectangles:
+        print(f"  {item}")
 
     def AnyCoordWith(x,y):
         global coordinates
@@ -197,9 +193,6 @@ def DrawDebugData():
                 if coord.x == x and coord.y == y:
                     return True
         return False
-
-    # █▓▒░·○
-
 
     for y in range(MAX_Y+2):
         for x in range(MAX_X+2):
@@ -217,7 +210,7 @@ print("reading coordinates")
 coordinates, MAX_X, MAX_Y = ReadData(FILENAME)
 
 print("computering perimeter")
-perimeter = ComputeringPerimeters(coordinates)
+perimeter = ComputeringPerimeter(coordinates)
 
 print("computering rectangles")
 rectangles = ComputingRectangles(coordinates)
@@ -231,4 +224,5 @@ valid_rectangles.sort(key=rectangleAreaSorter, reverse=True)
 if MAX_X < 80:
     DrawDebugData()
 
-print(f"largest rectangle = {str(valid_rectangles[0])}")
+if len(valid_rectangles) > 0:
+    print(f"largest rectangle = {str(valid_rectangles[0])}")
