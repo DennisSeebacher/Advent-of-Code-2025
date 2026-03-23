@@ -2,6 +2,8 @@
 # *      Reasoning       *
 # ************************
 
+from classes import *
+
 # - get the info from 9b-lod2.py and get the result
 
 # ************************
@@ -16,118 +18,15 @@ THRESHOLD = 200000
 # ************************
 
 InputFilename = './challenge9/input'
-
-# ************************
-# ***     Classes      ***
-# ************************
-
-class Coordinate:
-
-    idCounter = 0    
-
-    def __init__(self, column, row):
-        self.column = column
-        self.x = self.column
-        self.row = row
-        self.y = self.row
-        self.id = Coordinate.idCounter
-        Coordinate.idCounter += 1
-
-    def __str__(self):
-        return f"({self.column}/{self.row})"
-    
-    def __repr__(self):
-        return f"({self.column},{self.row})"
-    
-    def __eq__(self, other):
-        if type(other) != type(self):
-            return False
-        else: 
-            return self.column == other.column and self.row == other.row
-        
-    def __lt__(self, other):
-        if type(other) != type(self):
-            raise TypeError()
-        else:
-            return self.column < other.column and self.row < other.row
-        
-    def __gt__(self, other):
-        if type(other) != type(self):
-            raise TypeError()
-        else:
-            return self.column > other.column and self.row > other.row
-        
-    def __hash__(self):
-        return hash(f"{self.x}/{self.y}")
-
-class Rectangle:
-
-    idCounter = 0    
-
-    def __init__(self, coordinateA, coordinateB):
-        self.coordinateA = None
-        self.coordinateB = None
-        if coordinateA < coordinateB:
-            self.coordinateA = coordinateA
-            self.coordinateB = coordinateB
-        else:
-            self.coordinateA = coordinateB
-            self.coordinateB = coordinateA
-
-        self.id = Rectangle.idCounter
-        side_a = abs(self.coordinateA.column - self.coordinateB.column) +1 
-        side_b = abs(self.coordinateA.row - self.coordinateB.row) +1
-        self.Area = side_a * side_b
-        self.Corners = set()
-        #top left
-        self.Corners.add( ( min(self.coordinateA.column, self.coordinateB.column) , min(self.coordinateA.row, self.coordinateB.row) ) )
-        #top right
-        self.Corners.add( ( min(self.coordinateA.column, self.coordinateB.column) , max(self.coordinateA.row, self.coordinateB.row) ) )
-        #bottom left
-        self.Corners.add( ( max(self.coordinateA.column, self.coordinateB.column) , min(self.coordinateA.row, self.coordinateB.row) ) )
-        #bottom right
-        self.Corners.add( ( max(self.coordinateA.column, self.coordinateB.column) , max(self.coordinateA.row, self.coordinateB.row) ) )
-        Rectangle.idCounter += 1
-
-    def GetBorder(self, corners = True):
-        coords = []
-
-        left = min(self.coordinateA.column, self.coordinateB.column)
-        right = max(self.coordinateA.column, self.coordinateB.column)
-        up = min(self.coordinateA.row, self.coordinateB.row)
-        down = max(self.coordinateA.row, self.coordinateB.row)
-        
-        if corners: coords.append(Coordinate(left, up))
-
-        for column in range(left+1, right):
-            coords.append(Coordinate(column, up))
-            coords.append(Coordinate(column, down))
-        
-        if corners: coords.append(Coordinate(right, up))
-        
-        for row in range(min(self.coordinateA.row, self.coordinateB.row)+1, max(self.coordinateA.row, self.coordinateB.row)):
-            coords.append(Coordinate(left, row))
-            coords.append(Coordinate(right, row))
-
-        if corners: coords.append(Coordinate(left, down))
-        if corners: coords.append(Coordinate(right, down))
-
-        return coords
-    
-    def __str__(self):
-        return f"id: {self.id:8} | a->b: ({str(self.coordinateA):14}-> {str(self.coordinateB):14}) | area: {self.Area:8}"
-    
-    def TestIntersect(self, other):
-        # HIER WEITERMACHEN
-        # darf sich berühren
-        # darf nicht überschneiden
-        return False
+MAX_X = 0
+MAX_Y = 0
 
 # ************************
 # ***     Methods      ***
 # ************************
 
 def ReadData(FILENAME:str):
+    global MAX_X, MAX_Y
     coordinates = []
     
     file = open(FILENAME)
@@ -135,6 +34,10 @@ def ReadData(FILENAME:str):
         parts = line.split(',')
         c = Coordinate(int(parts[0]), int(parts[1]))
         coordinates.append(c)
+        if c.column > MAX_X: 
+            MAX_X = c.column
+        if c.row > MAX_Y: 
+            MAX_Y = c.row
     return coordinates
 
 def GenerateRectangles(coordinates:list):
@@ -210,7 +113,41 @@ rect_count = len(rectangles)
 print("Pruning intersecting Rectangles")
 rectangles = list(filter(rectIntersectFilter, rectangles))
 print(f"removed {rect_count-len(rectangles)}")
+if rect_count-len(rectangles) == 0:
+    raise ValueError("this should not be zero")
 rect_count = len(rectangles)
 
 print("Largest Rectangle:")
 print(rectangles[0])
+
+# ***** Draw as SVG *****
+
+svg_head = '<?xml version="1.0" encoding="UTF-8"?>' + "\n"
+svg_head += '<svg xmlns="http://www.w3.org/2000/svg"' + "\n"
+svg_head += 'version="1.1" baseProfile="full"' + "\n"
+svg_head += f'width="1000px" height="1000px" viewBox="0 0 {MAX_X} {MAX_Y}"' + "\n"
+svg_head += 'style="background: #fff;">' + "\n"
+svg_head += " " + "\n"
+
+svg_lines = ""
+for i in range(-1, len(coordinates)-1):
+    svg_lines += f'  <line x1="{coordinates[i].x}" y1="{coordinates[i].y}" x2="{coordinates[i+1].x}" y2="{coordinates[i+1].y}" style="stroke:black; stroke-width:8;" />' + "\n"
+
+svg_circles = " \n"
+for coordinate in coordinates:
+    svg_circles += f'  <circle cx="{coordinate.x}" cy="{coordinate.y}" r ="256" style="stroke:black; stoke-width:8;" fill="white"/>' + "\n"
+
+svg_ids = " \n"
+for coordinate in coordinates:
+    svg_ids += f'  <text x="{coordinate.x-16}" y="{coordinate.y+8}" fill="red" style="font-size:128;">{coordinate.id}</text>' + "\n"
+
+svg_body = svg_lines + svg_circles + svg_ids + " \n"
+
+svg_body += "\n" + f"<rect x=\"{rectangles[0].coordinateA.x}\" y=\"{rectangles[0].coordinateA.y}\" width=\"{rectangles[0].width}\" height=\"{rectangles[0].height}\" style=\"fill:rgb(255,192,192);stroke-width:12;stroke:blue\"></rect>"  + "\n"
+
+svg_end = "</svg>"
+
+svg_representation = svg_head + svg_body + svg_end
+
+with open("./challenge9/result.svg", "w") as file:
+    file.write(svg_representation)
