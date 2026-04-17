@@ -11,7 +11,6 @@ from classes import *
 # ************************
 
 problematic_rectangle = [248,250]
-THRESHOLD = 200000
 
 # ************************
 # ***    variables     ***
@@ -76,11 +75,8 @@ def rectMinSizeFilter(r):
     if r.coordinateA.y == r.coordinateB.y:
         return False
     
-    if r.Area > THRESHOLD:
-        return True
-    else:
-        return False
-
+    return True
+   
 def rectIntersectFilter(r):
     global problematic_rectangle
     if r.TestIntersect(problematic_rectangle):

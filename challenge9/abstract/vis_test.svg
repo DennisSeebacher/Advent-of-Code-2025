@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+version="1.1" baseProfile="full"
+width="1000px" height="1000px" viewBox="0 -1 13 9"
+style="background: #eee;">
+ 
+  <rect x="2" y="1" width="9" height="6" fill="white" />
+ 
+  <line x1="7" y1="3" x2="7" y2="1" style="stroke:black; stroke-width:0.25;" />
+  <line x1="7" y1="1" x2="11" y2="1" style="stroke:black; stroke-width:0.25;" />
+  <line x1="11" y1="1" x2="11" y2="7" style="stroke:black; stroke-width:0.25;" />
+  <line x1="11" y1="7" x2="9" y2="7" style="stroke:black; stroke-width:0.25;" />
+  <line x1="9" y1="7" x2="9" y2="5" style="stroke:black; stroke-width:0.25;" />
+  <line x1="9" y1="5" x2="2" y2="5" style="stroke:black; stroke-width:0.25;" />
+  <line x1="2" y1="5" x2="2" y2="3" style="stroke:black; stroke-width:0.25;" />
+  <line x1="2" y1="3" x2="7" y2="3" style="stroke:black; stroke-width:0.25;" />
+ 
+  <circle cx="7" cy="1" r ="0.25" fill="black"/>
+  <circle cx="11" cy="1" r ="0.25" fill="black"/>
+  <circle cx="11" cy="7" r ="0.25" fill="black"/>
+  <circle cx="9" cy="7" r ="0.25" fill="black"/>
+  <circle cx="9" cy="5" r ="0.25" fill="black"/>
+  <circle cx="2" cy="5" r ="0.25" fill="black"/>
+  <circle cx="2" cy="3" r ="0.25" fill="black"/>
+  <circle cx="7" cy="3" r ="0.25" fill="black"/>
+ 
+  <text x="7" y="1" fill="red" style="font-size:0.0625;">0</text>
+  <text x="11" y="1" fill="red" style="font-size:0.0625;">1</text>
+  <text x="11" y="7" fill="red" style="font-size:0.0625;">2</text>
+  <text x="9" y="7" fill="red" style="font-size:0.0625;">3</text>
+  <text x="9" y="5" fill="red" style="font-size:0.0625;">4</text>
+  <text x="2" y="5" fill="red" style="font-size:0.0625;">5</text>
+  <text x="2" y="3" fill="red" style="font-size:0.0625;">6</text>
+  <text x="7" y="3" fill="red" style="font-size:0.0625;">7</text>
+ 
+</svg>

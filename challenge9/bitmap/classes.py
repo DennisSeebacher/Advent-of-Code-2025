@@ -104,10 +104,10 @@ class Rectangle:
         if self.coordinateA.x > other.coordinateB.x:
             return False
         
-        if self.coordinateA.y < other.coordinateB.y:
+        if self.coordinateA.y > other.coordinateB.y:
             return False
         
-        if self.coordinateB.y > other.coordinateA.y:
+        if self.coordinateB.y < other.coordinateA.y:
             return False
         
         # self und other berühren
